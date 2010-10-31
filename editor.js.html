@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Editor.js - a web-based visual video editor</title>
+<link media="all" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/themes/base/jquery-ui.css" rel="stylesheet">
+<style>
+body {
+  font-family:Arial,Helvetica,Verdana,sans-serif;
+  font-size:10px;
+}
+#video-playback,
+#video-preview {
+  float:left;
+  width:50%;
+}
+#tabs {
+  clear:both;
+}
+#info {
+  text-align:right;
+}
+div.animated .ui-progressbar-value {
+  background-image:url(img/pbar-ani.gif);
+}
+</style>
+</head>
+<body>
+<h1>Editor.js</h1>
+<input type="button" value="Open video file" onclick="editor.start(0)">
+<!----><input type="button" value="Open web video file" onclick="editor.start(1)">
+<input type="file" id="input" onchange="editor.initPassThrough(this.files)">
+<div id="preview">
+  <div id="video-playback">Video playback<br></div>
+  <div id="video-preview">Preview<br><canvas id="crop_preview" width="1" height="1"></canvas></div>
+</div>
+<div id="tabs">
+  <ul>
+    <li><a href="#video-settings">Video settings</a></li>
+    <li><a href="#audio-settings">Audio settings</a></li>
+    <li><a href="#edit">Edit</a></li>
+    <li><a href="#crop">Crop</a></li>
+    <li><a href="#details">Details</a></li>
+  </ul>
+  <div id="video-settings">
+    <h2>Video settings</h2>
+    <input type="checkbox" id="novideo"> No video<br>
+    Video codec: <select id="videoCodec">
+      <option value="theora">Theora</option>
+      <option value="vp8">VP8</option>
+    </select><br>
+    Width: <input id="width" type="text" value="5" onchange="editor.update_preview()"><br>
+    Height: <input id="height" type="text" value="5" onchange="editor.update_preview()"><br>
+    Video quality: <input id="videoQuality" type="text" value="5"><br>
+    Video bitrate: <input id="videoBitrate" type="text" value="0"> kb/s<br>
+    Two pass: <input type="checkbox" id="twopass"><br>
+    Framerate: <input id="framerate" type="text" value="29"><br>
+    Aspect: <input id="aspect" type="text" value="4:3">
+  </div>
+  <div id="audio-settings">
+    <h2>Audio settings</h2>
+    <input type="checkbox" id="noaudio"> No audio<br>
+    Audio codec: <select id="audioCodec">
+      <option value="vorbis">Vorbis</option>
+    </select><br>
+    Audio quality: <input id="audioQuality" type="text" value="1"><br>
+    Audio bitrate: <input id="audioBitrate" type="text" value="32"> kb/s<br>
+    Samplerate: <input id="samplerate" type="text" value="32"> Hz<br>
+    Channels: <select id="channels">
+      <option value="1">Mono</option>
+      <option value="2" selected>Stereo</option>
+    </select>
+  </div>
+  <div id="edit">
+    <h2>Edit</h2>
+    Start time: <input id="starttime" type="text" value="0"><input type="button" value="Current frame" onclick="editor.set_time('starttime')"><br>
+    End time: <input id="endtime" type="text"><input type="button" value="Current frame" onclick="editor.set_time('endtime')">
+  </div>
+  <div id="crop">
+    <h2>Crop</h2>
+    Top: <input id="cropTop" type="text" value="0" onchange="editor.update_preview()"><br>
+    Right: <input id="cropRight" type="text" value="0" onchange="editor.update_preview()"><br>
+    Bottom: <input id="cropBottom" type="text" value="0" onchange="editor.update_preview()"><br>
+    Left: <input id="cropLeft" type="text" value="0" onchange="editor.update_preview()">
+  </div>
+  <div id="details">
+    <h2>Details</h2>
+    <ul>
+      <li>Name: <span id="info-path"></span></li>
+      <li>Duration: <span id="info-duration"></span></li>
+      <li>Size: <span id="info-size"></span></li>
+      <li>Bitrate: <span id="info-bitrate"></span></li>
+      <li><h3>Video</h3>
+      <ul>
+        <li>Codec: <span id="info-video-codec"></span></li>
+        <li>Pixel format: <span id="info-video-pixel_format"></span></li>
+        <li>Width: <span id="info-video-width"></span></li>
+        <li>Height: <span id="info-video-height"></span></li>
+        <li>Pixel aspect ratio: <span id="info-video-pixel_aspect_ratio"></span></li>
+        <li>Display aspect ratio: <span id="info-video-display_aspect_ratio"></span></li>
+        <li>Framerate: <span id="info-video-framerate"></span></li>
+      </ul></li>
+      <li><h3>Audio</h3>
+      <ul>
+        <li>Codec: <span id="info-audio-codec"></span></li>
+        <li>Samplerate: <span id="info-audio-samplerate"></span></li>
+        <li>Channels: <span id="info-audio-channels"></span></li>
+        <li>Bitrate: <span id="info-audio-bitrate"></span></li>
+      </ul></li>
+    </ul>
+  </div>
+  <hr>
+  <input type="button" value="Encode file to..." onclick="editor.encode()">
+</div>
+<div id="info">
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js"></script>
+<script>
+var editor = {
+  version: "0.01 alpha",
+  reader: false,
+  video: false,
+  info: false,
+  canvasContext: false,
+  init: function(){
+    if(typeof(Firefogg) === "undefined"){
+      return;
+    }
+    editor.ogg = new Firefogg;
+    $("#info").html("Firefogg v." + this.ogg.version + "<br>Editor.js v." + this.version);
+  },
+  start: function(passthrough){
+    if(this.ogg.selectVideo()) {
+      //var sourceInfo = this.ogg.sourceInfo;
+      var options = JSON.stringify({
+        //width: sourceInfo.video.width,
+        //videoBitrate: 500
+        videoQuality: 0,
+        channels: 1,
+        noUpscaling: 1,
+        passthrough: passthrough
+      });
+      this.ogg.encode(options);
+      this.info = JSON.parse(editor.ogg.sourceInfo);
+      this.updateDetails();
+      $("#video").remove();
+      $("body").append("<div id=encode><div id=progressbar></div></div>");
+      $("#encode").dialog({
+        height: 140,
+        modal: true,
+        draggable: false,
+        title: "Generating preview",
+        resizable: false,
+        closeOnEscape: false,
+        buttons: {
+          Cancel: function() {
+            editor.cancel();
+            $("#encode").dialog("destroy").remove();
+          }
+        }
+      });
+
+      this.encodingStatus();
+    }
+  },
+  updateDetails: function(){
+    // @todo: Generate this dynamically to allow several video/audio streams.
+    // General details
+    $("#info-path").html(this.info.path);
+    $("#info-duration").html(this.info.duration + " s.");
+    $("#info-size").html(this.info.size + " b");
+    $("#info-bitrate").html(this.info.bitrate + " kb/s");
+    // Video details
+    $("#info-video-codec").html(this.info.video[0].codec);
+    $("#info-video-pixel_format").html(this.info.video[0].pixel_format);
+    $("#info-video-width").html(this.info.video[0].width);
+    $("#info-video-height").html(this.info.video[0].height);
+    $("#info-video-pixel_aspect_ratio").html(this.info.video[0].pixel_aspect_ratio);
+    $("#info-video-display_aspect_ratio").html(this.info.video[0].display_aspect_ratio);
+    $("#info-video-framerate").html(this.info.video[0].framerate + " fps");
+    // Audio details
+    $("#info-audio-codec").html(this.info.audio[0].codec);
+    $("#info-audio-samplerate").html(this.info.audio[0].samplerate + " Hz");
+    $("#info-audio-channels").html(this.info.audio[0].channels);
+    $("#info-audio-bitrate").html(this.info.audio[0].bitrate + " kb/s");
+  },
+  encodingStatus: function(){
+    // @todo: user this instead of editor.
+    var status = editor.ogg.status(),
+      progress = editor.ogg.progress();
+    
+    $("#progressbar").progressbar({
+      value: progress * 100
+    });
+
+    //loop to get new status if still encoding
+    if(editor.ogg.state == "encoding") {
+      setTimeout(editor.encodingStatus, 100);
+    }
+    //encoding sucessfull, state can also be 'encoding failed'
+    else if(editor.ogg.state == "encoding done") {
+      $("#encode").dialog("destroy").remove();
+      $("video").remove();
+      $("#video-playback").append('<video controls="true" src="' + editor.ogg.previewUrl + '" id="video" tabindex="0"></video>');
+      editor.edit();
+    }
+  },
+  cancel: function(){
+    this.ogg.cancel();
+  },
+  initPassThrough: function(files){
+    $("video").remove();
+    for(var i = 0; i < files.length; i++){
+      var file = files[i];
+      var video = document.createElement("video");
+
+      video.classList.add("obj");
+      video.controls = 1;
+      video.id = "video";
+      video.tabindex = 0;
+      video.file = file;
+      var preview = document.getElementById("video-playback");
+      preview.appendChild(video);
+
+      this.reader = new FileReader();
+      this.reader.onload = (function(aVideo){
+        return function(e) {
+          aVideo.src = e.target.result;
+        };
+      })(video);
+      this.reader.readAsDataURL(file);
+    }
+    $("body").append("<div id=encode><div id=progressbar class=animated></div></div>");
+    $("#encode").dialog({
+      height: 140,
+      modal: true,
+      draggable: false,
+      title: "Importing video",
+      resizable: false,
+      closeOnEscape: false,
+      buttons: {
+        Cancel: function() {
+          editor.reader.abort();
+          $("#video").remove();
+          $("#encode").dialog("destroy").remove();
+        }
+      }
+    });
+    $("#progressbar").progressbar({
+      value: 100
+    });
+    this.readingStatus();
+  },
+  readingStatus: function(){
+    // @todo: user this instead of editor.
+    var status = editor.reader.readyState;
+
+    //loop to get new status if still encoding
+    if(status === editor.reader.LOADING) {
+      setTimeout(editor.readingStatus, 100);
+    }
+    //encoding sucessfull, state can also be 'EMPTY'
+    else if(status === editor.reader.DONE) {
+      $("#encode").dialog("destroy").remove();
+      editor.edit();
+    }
+  },
+  edit: function(){
+    this.video = $("#video")[0];
+    
+    // Set video settings from source.
+    $("#width").val(this.info.video[0].width);
+    $("#height").val(this.info.video[0].height);
+    $("#videoBitrate").val(this.info.bitrate - this.info.audio[0].bitrate);
+    $("#framerate").val(this.info.video[0].framerate);
+    $("#aspect").val(this.info.video[0].display_aspect_ratio);
+    
+    // Set audio settings from source.
+    $("#audioBitrate").val(this.info.audio[0].bitrate);
+    $("#samplerate").val(this.info.audio[0].samplerate);
+    $("#channels").val(this.info.audio[0].channels);
+    
+    $("#starttime").val(0);
+    $("#endtime").val(this.info.duration);
+    
+    var crop_preview = $("#crop_preview")[0];
+    this.canvasContext = crop_preview.getContext("2d");
+    editor.update_preview();
+  },
+  set_time: function(input_id){
+    if(!this.video){
+      return;
+    }
+    $("#" + input_id).val(this.video.currentTime);
+  },
+  update_preview: function(){
+    if(!this.canvasContext){
+      return;
+    }
+    // @todo: cache values in local variables.
+    $("#crop_preview")
+      .attr("width", $("#width").val())
+      .attr("height", $("#height").val());
+    this.canvasContext.drawImage(this.video,
+      $("#cropLeft").val(), $("#cropTop").val(), this.video.videoWidth - $("#cropLeft").val() - $("#cropRight").val(), this.video.videoHeight - $("#cropTop").val() - $("#cropBottom").val(),
+      0, 0, $("#width").val(), $("#height").val());
+  },
+  encode: function(){
+    this.ogg.saveVideoAs();
+    var options = {
+      starttime: $("#starttime").val(),
+      cropTop: $("#cropTop").val(),
+      cropBottom: $("#cropBottom").val(),
+      cropLeft: $("#cropLeft").val(),
+      cropRight: $("#cropRight").val(),
+      videoCodec: $("#videoCodec").val(),
+      width: $("#width").val(),
+      height: $("#height").val(),
+      videoQuality: $("#videoQuality").val(),
+      videoBitrate: $("#videoBitrate").val(),
+      framerate: $("#framerate").val(),
+      audioCodec: $("#audioCodec").val(),
+      audioQuality: $("#audioQuality").val(),
+      audioBitrate: $("#audioBitrate").val(),
+      samplerate: $("#samplerate").val(),
+      channels: $("#channels").val(),
+    };
+    if($("#endtime").val() != ""){
+      options.endtime = $("#endtime").val();
+    }
+    // Video
+    if($("#novideo:checked").length){
+      options.novideo = 1;
+    }
+    if($("#twopass:checked").length){
+      options.twopass = 1;
+    }
+    if($("#aspect").val() != ""){
+      options.aspect = $("#aspect").val();
+    }
+    // Audio
+    if($("#noaudio:checked").length){
+      options.noaudio = 1;
+    }
+    console.log(options);
+    this.ogg.encode(JSON.stringify(options));
+    this.encodingStatus();
+  }
+};
+
+$(document).ready(function(){
+  $("#progressbar").progressbar({
+    value: 0
+  });
+  $("#tabs").tabs();
+  $("input:button,input:file").button();
+  //editor.start();
+  //editor.edit();
+  editor.init();
+  
+  if(typeof(Firefogg) === "undefined") {
+    alert("You dont have Firefogg, please go to http://firefogg.org to install it");
+    window.open("http://firefogg.org");
+  }
+});
+</script>
+</body>
+</html>
