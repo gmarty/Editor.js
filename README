@@ -1,0 +1,16 @@
+Editor.js
+a web-based visual video editor in JavaScript.
+Require Firefox 3.5+ with Firefogg extension (http://firefogg.org).
+
+How to encode a video for the web:
+1. Select a local video file clicking on "Open video file" button.
+2. A low quality preview video is generated.
+3. Edit the video/audio settings. Default values are retrieved from source file.
+4. When adjusting crop borders, width and height a preview is updated.
+5. When you're done click on "Encode file to..." and generated a video file.
+
+Limitations:
+It is not yet possible to use directly a web ready video.
+It is still beta and a whole bunch of things needs refactoring/improvments...
+
+Editor.js used HTML5 features (Video, Canvas, File API).
