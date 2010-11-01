@@ -98,22 +98,29 @@ div.animated .ui-progressbar-value {
       <li>Size: <span id="info-size"></span></li>
       <li>Bitrate: <span id="info-bitrate"></span></li>
       <li><h3>Video</h3>
-      <ul>
-        <li>Codec: <span id="info-video-codec"></span></li>
-        <li>Pixel format: <span id="info-video-pixel_format"></span></li>
-        <li>Width: <span id="info-video-width"></span></li>
-        <li>Height: <span id="info-video-height"></span></li>
-        <li>Pixel aspect ratio: <span id="info-video-pixel_aspect_ratio"></span></li>
-        <li>Display aspect ratio: <span id="info-video-display_aspect_ratio"></span></li>
-        <li>Framerate: <span id="info-video-framerate"></span></li>
-      </ul></li>
+        <ul>
+          <li>Codec: <span id="info-video-codec"></span></li>
+          <li>Pixel format: <span id="info-video-pixel_format"></span></li>
+          <li>Width: <span id="info-video-width"></span></li>
+          <li>Height: <span id="info-video-height"></span></li>
+          <li>Pixel aspect ratio: <span id="info-video-pixel_aspect_ratio"></span></li>
+          <li>Display aspect ratio: <span id="info-video-display_aspect_ratio"></span></li>
+          <li>Framerate: <span id="info-video-framerate"></span></li>
+        </ul>
+      </li>
       <li><h3>Audio</h3>
-      <ul>
-        <li>Codec: <span id="info-audio-codec"></span></li>
-        <li>Samplerate: <span id="info-audio-samplerate"></span></li>
-        <li>Channels: <span id="info-audio-channels"></span></li>
-        <li>Bitrate: <span id="info-audio-bitrate"></span></li>
-      </ul></li>
+        <ul>
+          <li>Codec: <span id="info-audio-codec"></span></li>
+          <li>Samplerate: <span id="info-audio-samplerate"></span></li>
+          <li>Channels: <span id="info-audio-channels"></span></li>
+          <li>Bitrate: <span id="info-audio-bitrate"></span></li>
+        </ul>
+      </li>
+      <li><h3>Metadata</h3>
+        <ul>
+          <li>Copyright: <span id="info-metadata-copyright"></span></li>
+        </ul>
+      </li>
     </ul>
   </div>
   <hr>
@@ -123,6 +130,7 @@ div.animated .ui-progressbar-value {
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js"></script>
+<script src="js/utf8.js"></script>
 <script>
 var editor = {
   version: "0.01 alpha",
@@ -194,6 +202,12 @@ var editor = {
     $("#info-audio-samplerate").html(this.info.audio[0].samplerate + " Hz");
     $("#info-audio-channels").html(this.info.audio[0].channels);
     $("#info-audio-bitrate").html(this.info.audio[0].bitrate + " kb/s");
+    // Metadata details
+    if(typeof this.info.metadata !== "undefined" && typeof this.info.metadata.copyright !== "undefined"){
+      $("#info-metadata-copyright").html(Utf8.decode(this.info.metadata.copyright));
+    }else{
+      $("#info-metadata-copyright").empty();
+    }
   },
   encodingStatus: function(){
     // @todo: user this instead of editor.
