@@ -9,6 +9,10 @@ body {
   font-family:Arial,Helvetica,Verdana,sans-serif;
   font-size:10px;
 }
+fieldset label {
+  display:inline-block;
+  width:6em;
+}
 #video-playback,
 #video-preview {
   float:left;
@@ -23,6 +27,9 @@ body {
 }
 div.animated .ui-progressbar-value {
   background-image:url(img/pbar-ani.gif);
+}
+.ui-state-default, .ui-widget-header {
+  text-shadow:1px 1px 0px #fff;
 }
 </style>
 </head>
@@ -41,38 +48,39 @@ div.animated .ui-progressbar-value {
     <li><a href="#audio-settings">Audio settings</a></li>
     <li><a href="#edit">Edit</a></li>
     <li><a href="#crop">Crop</a></li>
+    <li><a href="#metadata">Metadata</a></li>
     <li><a href="#details">Details</a></li>
   </ul>
   <div id="video-settings">
     <h2>Video settings</h2>
-    <input type="checkbox" id="novideo" onchange="editor.novideo()"> No video<br>
+    <label><input type="checkbox" id="novideo" onchange="editor.novideo()"> No video</label>
     <fieldset id="video-options">
       <legend>Video options</legend>
-      Video codec: <select id="videoCodec">
+      <label for="videoCodec">Video codec:</label> <select id="videoCodec">
         <option value="theora">Theora</option>
         <option value="vp8">VP8</option>
       </select><br>
-      Width: <input id="width" type="text" value="5" onchange="editor.update_preview()"><br>
-      Height: <input id="height" type="text" value="5" onchange="editor.update_preview()"><br>
-      Video quality: <input id="videoQuality" type="text" value="5"><br>
-      Video bitrate: <input id="videoBitrate" type="text" value="0"> kb/s<br>
-      Two pass: <input type="checkbox" id="twopass"><br>
-      Framerate: <input id="framerate" type="text" value="29"><br>
-      Aspect: <input id="aspect" type="text" value="4:3">
+      <label for="width">Width:</label> <input id="width" type="text" value="5" onchange="editor.update_preview()"><br>
+      <label for="height">Height:</label> <input id="height" type="text" value="5" onchange="editor.update_preview()"><br>
+      <label for="videoQuality">Video quality:</label> <input id="videoQuality" type="text" value="5"><br>
+      <label for="videoBitrate">Video bitrate:</label> <input id="videoBitrate" type="text" value="0"> kb/s<br>
+      <label for="twopass">Two pass:</label> <input id="twopass" type="checkbox"><br>
+      <label for="framerate">Framerate:</label> <input id="framerate" type="text" value="29"><br>
+      <label for="aspect">Aspect:</label> <input id="aspect" type="text" value="4:3">
     </fieldset>
   </div>
   <div id="audio-settings">
     <h2>Audio settings</h2>
-    <input type="checkbox" id="noaudio" onchange="editor.noaudio()"> No audio<br>
+    <label><input type="checkbox" id="noaudio" onchange="editor.noaudio()"> No audio</label>
     <fieldset id="audio-options">
       <legend>Audio options</legend>
-      Audio codec: <select id="audioCodec">
+      <label for="audioCodec">Audio codec:</label> <select id="audioCodec">
         <option value="vorbis">Vorbis</option>
       </select><br>
-      Audio quality: <input id="audioQuality" type="text" value="1"><br>
-      Audio bitrate: <input id="audioBitrate" type="text" value="32"> kb/s<br>
-      Samplerate: <input id="samplerate" type="text" value="32"> Hz<br>
-      Channels: <select id="channels">
+      <label for="audioQuality">Audio quality:</label> <input id="audioQuality" type="text" value="1"><br>
+      <label for="audioBitrate">Audio bitrate:</label> <input id="audioBitrate" type="text" value="32"> kb/s<br>
+      <label for="samplerate">Samplerate:</label> <input id="samplerate" type="text" value="32"> Hz<br>
+      <label for="channels">Channels:</label> <select id="channels">
         <option value="1">Mono</option>
         <option value="2" selected>Stereo</option>
       </select>
@@ -80,15 +88,32 @@ div.animated .ui-progressbar-value {
   </div>
   <div id="edit">
     <h2>Edit</h2>
-    Start time: <input id="starttime" type="text" value="0"><input type="button" value="Current frame" onclick="editor.set_time('starttime')"><br>
-    End time: <input id="endtime" type="text"><input type="button" value="Current frame" onclick="editor.set_time('endtime')">
+    <fieldset>
+      <label for="starttime">Start time:</label> <input id="starttime" type="text" value="0"> <input type="button" value="Current frame" onclick="editor.set_time('starttime')"><br>
+      <label for="endtime">End time:</label> <input id="endtime" type="text"> <input type="button" value="Current frame" onclick="editor.set_time('endtime')">
+    </fieldset>
   </div>
   <div id="crop">
     <h2>Crop</h2>
-    Top: <input id="cropTop" type="text" value="0" onchange="editor.update_preview()"><br>
-    Right: <input id="cropRight" type="text" value="0" onchange="editor.update_preview()"><br>
-    Bottom: <input id="cropBottom" type="text" value="0" onchange="editor.update_preview()"><br>
-    Left: <input id="cropLeft" type="text" value="0" onchange="editor.update_preview()">
+    <fieldset>
+      <label for="cropTop">Top:</label> <input id="cropTop" type="text" value="0" onchange="editor.update_preview()"><br>
+      <label for="cropRight">Right:</label> <input id="cropRight" type="text" value="0" onchange="editor.update_preview()"><br>
+      <label for="cropBottom">Bottom:</label> <input id="cropBottom" type="text" value="0" onchange="editor.update_preview()"><br>
+      <label for="cropLeft">Left:</label> <input id="cropLeft" type="text" value="0" onchange="editor.update_preview()">
+    </fieldset>
+  </div>
+  <div id="metadata">
+    <h2>Metadata</h2>
+    <fieldset>
+      <label for="title">Title:</label> <input id="title" type="text"><br>
+      <label for="artist">Artist:</label> <input id="artist" type="text"><br>
+      <label for="date">Date:</label> <input id="date" type="text"><br>
+      <label for="location">Location:</label> <input id="location" type="text"><br>
+      <label for="organization">Organization:</label> <input id="organization" type="text"><br>
+      <label for="copyright">Copyright:</label> <input id="copyright" type="text"><br>
+      <label for="license">License:</label> <input id="license" type="text"><br>
+      <label for="contact">Contact:</label> <input id="contact" type="text">
+    </fieldset>
   </div>
   <div id="details">
     <h2>Details</h2>
@@ -198,10 +223,12 @@ var editor = {
     $("#info-video-display_aspect_ratio").html(this.info.video[0].display_aspect_ratio);
     $("#info-video-framerate").html(this.info.video[0].framerate + " fps");
     // Audio details
-    $("#info-audio-codec").html(this.info.audio[0].codec);
-    $("#info-audio-samplerate").html(this.info.audio[0].samplerate + " Hz");
-    $("#info-audio-channels").html(this.info.audio[0].channels);
-    $("#info-audio-bitrate").html(this.info.audio[0].bitrate + " kb/s");
+    if(typeof this.info.audio[0] !== "undefined"){
+      $("#info-audio-codec").html(this.info.audio[0].codec);
+      $("#info-audio-samplerate").html(this.info.audio[0].samplerate + " Hz");
+      $("#info-audio-channels").html(this.info.audio[0].channels);
+      $("#info-audio-bitrate").html(this.info.audio[0].bitrate + " kb/s");
+    }
     // Metadata details
     if(typeof this.info.metadata !== "undefined" && typeof this.info.metadata.copyright !== "undefined"){
       $("#info-metadata-copyright").html(Utf8.decode(this.info.metadata.copyright));
@@ -293,19 +320,32 @@ var editor = {
     }
   },
   edit: function(){
+    var audio_bitrate = 0;
+    
     this.video = $("#video")[0];
     
     // Set video settings from source.
     $("#width").val(this.info.video[0].width);
     $("#height").val(this.info.video[0].height);
-    $("#videoBitrate").val(this.info.bitrate - this.info.audio[0].bitrate);
     $("#framerate").val(this.info.video[0].framerate);
     $("#aspect").val(this.info.video[0].display_aspect_ratio);
     
     // Set audio settings from source.
-    $("#audioBitrate").val(this.info.audio[0].bitrate);
-    $("#samplerate").val(this.info.audio[0].samplerate);
-    $("#channels").val(this.info.audio[0].channels);
+    if(typeof this.info.audio[0] !== "undefined"){
+      audio_bitrate = this.info.audio[0].bitrate;
+      
+      $("#audioBitrate").val(this.info.audio[0].bitrate);
+      $("#samplerate").val(this.info.audio[0].samplerate);
+      $("#channels").val(this.info.audio[0].channels);
+    }
+    $("#videoBitrate").val(this.info.bitrate - audio_bitrate);
+    
+     // Set metadata from source.
+    if(typeof this.info.metadata !== "undefined" && typeof this.info.metadata.copyright !== "undefined"){
+      $("#copyright").val(Utf8.decode(this.info.metadata.copyright));
+    }else{
+      $("#copyright").val("");
+    }
     
     $("#starttime").val(0);
     $("#endtime").val(this.info.duration);
@@ -360,14 +400,25 @@ var editor = {
       videoCodec: $("#videoCodec").val(),
       width: $("#width").val(),
       height: $("#height").val(),
+      // Video settings
       videoQuality: $("#videoQuality").val(),
       videoBitrate: $("#videoBitrate").val(),
       framerate: $("#framerate").val(),
+      // Audio settings
       audioCodec: $("#audioCodec").val(),
       audioQuality: $("#audioQuality").val(),
       audioBitrate: $("#audioBitrate").val(),
       samplerate: $("#samplerate").val(),
       channels: $("#channels").val(),
+      // Metadata
+      title: Utf8.encode($("#title").val()),
+      artist: Utf8.encode($("#artist").val()),
+      date: Utf8.encode($("#date").val()),
+      location: Utf8.encode($("#location").val()),
+      organization: Utf8.encode($("#organization").val()),
+      copyright: Utf8.encode($("#copyright").val()),
+      license: Utf8.encode($("#license").val()),
+      contact: Utf8.encode($("#contact").val())
     };
     if($("#endtime").val() != ""){
       options.endtime = $("#endtime").val();
