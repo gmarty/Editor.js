@@ -466,8 +466,13 @@ var editor = {
 };
 
 $(document).ready(function(){
-  $("#tabs").tabs();
   $("input:button,input:file").button();
+  $("#tabs").tabs();
+  $("#date").datepicker({
+    changeMonth: true,
+    changeYear: true,
+    showAnim: "drop"
+  });
   //editor.start();
   //editor.edit();
   editor.init();
