@@ -12,6 +12,7 @@ body {
 #video-playback,
 #video-preview {
   float:left;
+  text-align:center;
   width:50%;
 }
 #tabs {
@@ -166,6 +167,9 @@ var editor = {
           }
         }
       });
+      $("#progressbar").progressbar({
+        value: 0
+      });
 
       this.encodingStatus();
     }
@@ -195,7 +199,7 @@ var editor = {
     // @todo: user this instead of editor.
     var status = editor.ogg.status(),
       progress = editor.ogg.progress();
-    
+
     $("#progressbar").progressbar({
       value: progress * 100
     });
@@ -251,10 +255,12 @@ var editor = {
           $("#video").remove();
           $("#encode").dialog("destroy").remove();
         }
+      },
+      open: function() {
+        $("#progressbar").progressbar({
+          value: 0
+        });
       }
-    });
-    $("#progressbar").progressbar({
-      value: 100
     });
     this.readingStatus();
   },
@@ -292,7 +298,8 @@ var editor = {
     
     var crop_preview = $("#crop_preview")[0];
     this.canvasContext = crop_preview.getContext("2d");
-    editor.update_preview();
+    // @todo: Attach call to update_preview() on video play.
+    //editor.update_preview();
   },
   set_time: function(input_id){
     if(!this.video){
@@ -365,16 +372,35 @@ var editor = {
     if($("#noaudio:checked").length){
       options.noaudio = 1;
     }
+
     console.log(options);
     this.ogg.encode(JSON.stringify(options));
+      $("body").append("<div id=encode><div id=progressbar></div></div>");
+      $("#encode").dialog({
+        height: 140,
+        modal: true,
+        draggable: false,
+        title: "Generating preview",
+        resizable: false,
+        closeOnEscape: false,
+        buttons: {
+          Cancel: function() {
+            editor.cancel();
+            $("#encode").dialog("destroy").remove();
+          }
+        },
+        open: function() {
+          $("#progressbar").progressbar({
+            value: 0
+          });
+        }
+      });
+
     this.encodingStatus();
   }
 };
 
 $(document).ready(function(){
-  $("#progressbar").progressbar({
-    value: 0
-  });
   $("#tabs").tabs();
   $("input:button,input:file").button();
   //editor.start();
