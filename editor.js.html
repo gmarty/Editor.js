@@ -44,32 +44,38 @@ div.animated .ui-progressbar-value {
   </ul>
   <div id="video-settings">
     <h2>Video settings</h2>
-    <input type="checkbox" id="novideo"> No video<br>
-    Video codec: <select id="videoCodec">
-      <option value="theora">Theora</option>
-      <option value="vp8">VP8</option>
-    </select><br>
-    Width: <input id="width" type="text" value="5" onchange="editor.update_preview()"><br>
-    Height: <input id="height" type="text" value="5" onchange="editor.update_preview()"><br>
-    Video quality: <input id="videoQuality" type="text" value="5"><br>
-    Video bitrate: <input id="videoBitrate" type="text" value="0"> kb/s<br>
-    Two pass: <input type="checkbox" id="twopass"><br>
-    Framerate: <input id="framerate" type="text" value="29"><br>
-    Aspect: <input id="aspect" type="text" value="4:3">
+    <input type="checkbox" id="novideo" onchange="editor.novideo()"> No video<br>
+    <fieldset id="video-options">
+      <legend>Video options</legend>
+      Video codec: <select id="videoCodec">
+        <option value="theora">Theora</option>
+        <option value="vp8">VP8</option>
+      </select><br>
+      Width: <input id="width" type="text" value="5" onchange="editor.update_preview()"><br>
+      Height: <input id="height" type="text" value="5" onchange="editor.update_preview()"><br>
+      Video quality: <input id="videoQuality" type="text" value="5"><br>
+      Video bitrate: <input id="videoBitrate" type="text" value="0"> kb/s<br>
+      Two pass: <input type="checkbox" id="twopass"><br>
+      Framerate: <input id="framerate" type="text" value="29"><br>
+      Aspect: <input id="aspect" type="text" value="4:3">
+    </fieldset>
   </div>
   <div id="audio-settings">
     <h2>Audio settings</h2>
-    <input type="checkbox" id="noaudio"> No audio<br>
-    Audio codec: <select id="audioCodec">
-      <option value="vorbis">Vorbis</option>
-    </select><br>
-    Audio quality: <input id="audioQuality" type="text" value="1"><br>
-    Audio bitrate: <input id="audioBitrate" type="text" value="32"> kb/s<br>
-    Samplerate: <input id="samplerate" type="text" value="32"> Hz<br>
-    Channels: <select id="channels">
-      <option value="1">Mono</option>
-      <option value="2" selected>Stereo</option>
-    </select>
+    <input type="checkbox" id="noaudio" onchange="editor.noaudio()"> No audio<br>
+    <fieldset id="audio-options">
+      <legend>Audio options</legend>
+      Audio codec: <select id="audioCodec">
+        <option value="vorbis">Vorbis</option>
+      </select><br>
+      Audio quality: <input id="audioQuality" type="text" value="1"><br>
+      Audio bitrate: <input id="audioBitrate" type="text" value="32"> kb/s<br>
+      Samplerate: <input id="samplerate" type="text" value="32"> Hz<br>
+      Channels: <select id="channels">
+        <option value="1">Mono</option>
+        <option value="2" selected>Stereo</option>
+      </select>
+    </fieldset>
   </div>
   <div id="edit">
     <h2>Edit</h2>
@@ -305,6 +311,22 @@ var editor = {
     this.canvasContext.drawImage(this.video,
       $("#cropLeft").val(), $("#cropTop").val(), this.video.videoWidth - $("#cropLeft").val() - $("#cropRight").val(), this.video.videoHeight - $("#cropTop").val() - $("#cropBottom").val(),
       0, 0, $("#width").val(), $("#height").val());
+  },
+  novideo: function(){
+    var video_options = $("#video-options");
+    if($("#novideo:checked").length){
+      video_options.find("input,select").attr("disabled", "disabled");
+    }else{
+      video_options.find("input,select").attr("disabled", 0);
+    }
+  },
+  noaudio: function(){
+    var audio_options = $("#audio-options");
+    if($("#noaudio:checked").length){
+      audio_options.find("input,select").attr("disabled", "disabled");
+    }else{
+      audio_options.find("input,select").attr("disabled", 0);
+    }
   },
   encode: function(){
     this.ogg.saveVideoAs();
