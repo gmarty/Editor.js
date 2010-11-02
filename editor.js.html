@@ -46,6 +46,7 @@ div.animated .ui-progressbar-value {
   <ul>
     <li><a href="#video-settings">Video settings</a></li>
     <li><a href="#audio-settings">Audio settings</a></li>
+    <li><a href="#process-image">Process image</a></li>
     <li><a href="#edit">Edit</a></li>
     <li><a href="#crop">Crop</a></li>
     <li><a href="#metadata">Metadata</a></li>
@@ -84,6 +85,20 @@ div.animated .ui-progressbar-value {
         <option value="1">Mono</option>
         <option value="2" selected>Stereo</option>
       </select>
+    </fieldset>
+  </div>
+  <div id="process-image">
+    <h2>Process image</h2>
+    <fieldset>
+      <label for="brightness">Brightness:</label> <input id="brightness" type="text" value="0.0"><br>
+      <label for="contrast">Contrast:</label> <input id="contrast" type="text" value="1.0"><br>
+      <label for="gamma">Gamma:</label> <input id="gamma" type="text" value="1.0"><br>
+      <label for="saturation">Saturation:</label> <input id="saturation" type="text" value="1.0">
+      <div class="ui-widget">
+        <div style="padding: 0pt 0.7em;" class="ui-state-highlight ui-corner-all"> 
+          <p><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span> There is currently no preview for these settings.</p>
+        </div>
+      </div>
     </fieldset>
   </div>
   <div id="edit">
@@ -410,6 +425,11 @@ var editor = {
       audioBitrate: $("#audioBitrate").val(),
       samplerate: $("#samplerate").val(),
       channels: $("#channels").val(),
+      // Process image
+      brightness: parseFloat($("#brightness").val()),
+      contrast: parseFloat($("#contrast").val()),
+      gamma: parseFloat($("#gamma").val()),
+      saturation: parseFloat($("#saturation").val()),
       // Metadata
       title: Utf8.encode($("#title").val()),
       artist: Utf8.encode($("#artist").val()),
@@ -473,6 +493,7 @@ $(document).ready(function(){
     changeYear: true,
     showAnim: "drop"
   });
+
   //editor.start();
   //editor.edit();
   editor.init();
