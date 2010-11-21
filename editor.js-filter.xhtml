@@ -31,6 +31,9 @@ div.ui-slider-horizontal {
 #info {
   text-align:right;
 }
+div.clear {
+  clear:both;
+}
 div.animated .ui-progressbar-value {
   background-image:url(img/pbar-ani.gif);
 }
@@ -42,7 +45,7 @@ div.animated .ui-progressbar-value {
 }
 </style>
 </head>
-<body>
+<body class="global-filter">
 <h1>Editor.js</h1>
 <input type="button" value="Open video file" onclick="editor.start(0)"/>
 <!----><input type="button" value="Open web video file" onclick="editor.start(1)"/>
@@ -100,8 +103,11 @@ div.animated .ui-progressbar-value {
     <h2>Process image</h2>
     <fieldset>
       <label for="brightness" class="slider">Brightness:</label> <div id="brightness"></div>
+      <div class="clear"></div>
       <label for="contrast" class="slider">Contrast:</label> <div id="contrast"></div>
+      <div class="clear"></div>
       <label for="gamma" class="slider">Gamma:</label> <div id="gamma"></div>
+      <div class="clear"></div>
       <label for="saturation" class="slider">Saturation:</label> <div id="saturation"></div>
       <div class="ui-widget">
         <div style="padding: 0pt 0.7em;" class="ui-state-highlight ui-corner-all"> 
@@ -180,17 +186,12 @@ div.animated .ui-progressbar-value {
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="0">
   <defs>
     <filter id="global-filter">
-      <feComponentTransfer id="brightness-contrast-fe">
-        <feFuncR type="linear" slope="1" intercept="0"/>
-        <feFuncG type="linear" slope="1" intercept="0"/>
-        <feFuncB type="linear" slope="1" intercept="0"/>
-      </feComponentTransfer>
       <feComponentTransfer id="gamma-fe">
         <feFuncR type="gamma" amplitude="1" exponent="1" offset="0"/>
         <feFuncG type="gamma" amplitude="1" exponent="1" offset="0"/>
         <feFuncB type="gamma" amplitude="1" exponent="1" offset="0"/>
       </feComponentTransfer>
-      <feColorMatrix id="saturation-fe" values="1 0 0 0 0
+      <feColorMatrix id="brightness-contrast-saturation-fe" values="1 0 0 0 0
                                                     0 1 0 0 0
                                                     0 0 1 0 0
                                                     0 0 0 1 0"/>
@@ -542,48 +543,40 @@ $(document).ready(function(){
     max: 10,
     step: 0.1
   });
-  // @todo: Merge brightness-contrast-filter and saturation using the matrix described at :
-  //    > http://www.kevlindev.com/tutorials/basics/filters/feColorMatrix/index.htm
-  $("#brightness").bind("slide change", function() {
-    var value = Math.pow($(this).slider("value") + 1, pow);
-    $("#brightness-contrast-fe > *").each(function(){
-      $(this).attr("slope", value);
-    });
+  $("#brightness,#contrast,#saturation").bind("slide slidechange", function() {
+    var  b = Math.pow($("#brightness").slider("value") + 1, pow);
+      c = Math.pow($("#contrast").slider("value") - 0.1, inv_pow) - 1;
+      s = $("#saturation").slider("value"),
+      values = [
+        // R
+        (0.213 + 0.787 * s) * b,
+        0.715 - 0.715 * s,
+        0.072 - 0.072 * s,
+        0,
+        c,
+        // G
+        0.213 - 0.213 * s,
+        (0.715 + 0.285 * s) * b,
+        0.072 - 0.072 * s,
+        0,
+        c,
+        // B
+        0.213 - 0.213 * s,
+        0.715 - 0.715 * s,
+        (0.072 + 0.928 * s) * b,  
+        0,
+        c,
+        // A
+        "0 0 0 1 0"
+      ].join(" ");
+    $("#brightness-contrast-saturation-fe").attr("values", values);
+    console.log("b = " + b + " / c = " + c + " / s = " + s);
   });
-  $("#contrast").bind("slide stop change", function() {
-    var value = Math.pow($(this).slider("value") - 0.1, inv_pow) - 1;
-    $("#brightness-contrast-fe > *").each(function(){
-      $(this).attr("intercept", value);
-    });
-  });
-  $("#gamma").bind("slide stop change", function() {
+  $("#gamma").bind("slide slidechange", function() {
     var value = $(this).slider("value");
     $("#gamma-fe > *").each(function(){
       $(this).attr("amplitude", value);
     });
-  });
-  $("#saturation").bind("slide stop change", function() {
-    var value = $(this).slider("value"),
-      values = [
-        // R
-        0.213 + 0.787 * value,
-        0.715 - 0.715 * value,
-        0.072 - 0.072 * value,
-        "0  0",
-        // G
-        0.213 - 0.213 * value,
-        0.715 + 0.285 * value,
-        0.072 - 0.072 * value,
-        "0  0",
-        // B
-        0.213 - 0.213 * value,
-        0.715 - 0.715 * value,
-        0.072 + 0.928 * value,
-        "0  0",
-        // A
-        "0 0 0  1  0"
-      ].join(" ");
-    $("#saturation-fe").attr("values", values);
   });
 
   //editor.start();
