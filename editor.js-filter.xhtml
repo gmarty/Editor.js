@@ -19,6 +19,12 @@ label.slider {
 div.ui-slider-horizontal {
   margin:.2em 0 0 6em;
 }
+#preview {
+  background:#696969;
+  margin:1em 0;
+  padding:1em;
+  text-shadow:1px 1px 0 #7f7f7f;
+}
 #video-playback,
 #video-preview {
   float:left;
@@ -53,6 +59,7 @@ div.animated .ui-progressbar-value {
 <div id="preview">
   <div id="video-playback">Video playback<br/></div>
   <div id="video-preview">Preview<br/><canvas id="crop_preview" width="1" height="1" class="global-filter"></canvas></div>
+  <div class="clear"></div>
 </div>
 <div id="tabs">
   <ul>
@@ -111,7 +118,7 @@ div.animated .ui-progressbar-value {
       <label for="saturation" class="slider">Saturation:</label> <div id="saturation"></div>
       <div class="ui-widget">
         <div style="padding: 0pt 0.7em;" class="ui-state-highlight ui-corner-all"> 
-          <p><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span> There is currently no preview for all these settings.</p>
+          <p><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span> The preview might not be exactly the actual output.</p>
         </div>
       </div>
     </fieldset>
@@ -535,7 +542,7 @@ $(document).ready(function(){
     min: -1,
     value: 0,
     max: 1,
-    step: 0.1
+    step: 0.01
   });
   $("#contrast,#gamma,#saturation").slider({
     min: 0.1,
@@ -544,8 +551,8 @@ $(document).ready(function(){
     step: 0.1
   });
   $("#brightness,#contrast,#saturation").bind("slide slidechange", function() {
-    var  b = Math.pow($("#brightness").slider("value") + 1, pow);
-      c = Math.pow($("#contrast").slider("value") - 0.1, inv_pow) - 1;
+    var b = Math.pow($("#brightness").slider("value") + 1, pow);
+      c = Math.pow($("#contrast").slider("value"), inv_pow) - 1;
       s = $("#saturation").slider("value"),
       values = [
         // R
