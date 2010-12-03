@@ -80,8 +80,8 @@ div.animated .ui-progressbar-value {
         <option value="theora">Theora</option>
         <option value="vp8">VP8</option>
       </select><br/>
-      <label for="width">Width:</label> <input id="width" type="text" value="5" onchange="editor.update_preview()"/><br/>
-      <label for="height">Height:</label> <input id="height" type="text" value="5" onchange="editor.update_preview()"/><br/>
+      <label for="width">Width:</label> <input id="width" type="text" value="320" onchange="editor.update_preview()"/><br/>
+      <label for="height">Height:</label> <input id="height" type="text" value="240" onchange="editor.update_preview()"/><br/>
       <label for="videoQuality">Video quality:</label> <input id="videoQuality" type="text" value="5"/><br/>
       <label for="videoBitrate">Video bitrate:</label> <input id="videoBitrate" type="text" value="0"/> kb/s<br/>
       <label for="twopass">Two pass:</label> <input id="twopass" type="checkbox"/><br/>
@@ -316,6 +316,7 @@ var editor = {
   },
   initPassThrough: function(files){
     $("video").remove();
+    $("#details").find("span").empty();
     for(var i = 0; i < files.length; i++){
       var file = files[i];
       var video = document.createElement("video");
@@ -402,15 +403,19 @@ var editor = {
       
       $("#endtime").val(this.info.duration);
     }
-    
-    $("#width").val(this.video.videoWidth);
-    $("#height").val(this.video.videoHeight);
+
+    var handler = function(){
+      $("#width").val(this.videoWidth);
+      $("#height").val(this.videoHeight);
+      editor.update_preview();
+      $(this).unbind("loadedmetadata", handler);
+    };
+    $(this.video).bind("loadedmetadata", handler);
+
     $("#starttime").val(0);
-    
+
     var crop_preview = $("#crop_preview")[0];
     this.canvasContext = crop_preview.getContext("2d");
-    // @todo: Attach call to update_preview() on video play.
-    //editor.update_preview();
   },
   set_time: function(input_id){
     if(!this.video){
